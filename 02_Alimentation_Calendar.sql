@@ -1,74 +1,55 @@
-USE [InventaireDW]  
-print 'Début du script'
 
 --set language 'english';
 set language 'french'
 set datefirst 1;
 
-WITH
-MANGAL as
-(
-SELECT Cast ('2000-01-01' as DateTime) Date 
-UNION  ALL
-SELECT Date + 1 FROM MANGAL WHERE Date + 1 < = Cast ('2030-12-12' as DateTime) 
-)
-INSERT INTO [dwh].[DIM_CALENDAR_CAL] (CAL_CalendarId,
-									CAL_ValueDate,
-									CAL_DateName,
-									CAL_Year_Datetime,
-									CAL_Year_Name,
-									CAL_Semester_Datetime,
-									CAL_SemesterName,
-									CAL_Trimester_Datetime,
-									CAL_Trimester_Name,
-									CAL_Month_Datetime,
-									CAL_Month_Number_Year,
-									CAL_Month_Number_Of_Trimester,
-									CAL_Month_Name_FR,
-									CAL_Month_Name_Abbreviation_FR,
-									CAL_Week_Datetime,
-									CAL_Week_Number_Of_Year,
-									CAL_Week_Number_Of_Year_ISO8601,
-									CAL_Week_Number_Of_Trimester,
-									CAL_Week_Number_Of_Month,
-									CAL_Day_Number_Of_Year,
-									CAL_Day_Number_Of_Trimester,
-									CAL_Day_Number_Of_Month,
-									CAL_Day_Number_Of_Week,
-									CAL_Day_IsMemberLastWeek,
-									CAL_Day_Name_FR,
-									CAL_Day_Name_Abbreviation_FR
-									)
+WITH	cte_calendar as
+	(
+		SELECT Cast ('2000-01-01' as DateTime) [Date] 
+		UNION  ALL
+		SELECT [Date] + 1 
+		FROM cte_calendar 
+		WHERE [Date] + 1 < = Cast ('2030-12-12' as DateTime) 
+	)
+
 	SELECT 
-	CAST(convert(Varchar(10),date,112) as integer) 
-	,Date
-	,CONVERT(VarChar(12),date,113)
-	,CAST(cast(YEAR (date) AS varchar(4))+'0101' as datetime)
-	,YEAR (date)
-	,cast(cast(YEAR (date) AS varchar(4)) + '0' + cast(Ceiling(Month(date)/6.0)as varchar(1)) +'01' as datetime)
-	,Ceiling(Month(date)/6.0)
-	,CAST(cast(YEAR (date) AS varchar(4))+right('0'+cast(((DatePart ( qq, date)-1)*3)+1 AS varchar(2)),2)+'01' as datetime)
-	,DatePart (qq, date)
-	,CAST(cast(YEAR (date) AS varchar(4))+right('0'+cast(MONTH (date) AS varchar(2)),2)+'01' as datetime)
-	,MONTH (date)
-	,DateDiff(mm,DateAdd(qq,DateDiff(qq,0,date),0),date)+1 
-	,DateName (mm, date)
-	,LEFT( DateName (mm, date), 3)
-	,DATEADD(DD, 1 - DATEPART(DW, date), date)
-	,DatePart (wk, Date)
-	,dwh.weekNumber(Date)
-	--,datediff(wk,dateadd(qq,datediff(qq,0,date),0),date)+1
-	,datediff(wk,dateadd(qq,datediff(qq,0,date),0),date)+1
-	,datediff(wk,dateadd(mm,datediff(mm,0,date),0),date)+1
-	,DatePart (dy, date)
-	,datediff(dd,dateadd(qq,datediff(qq,0,date),0),date)+1
-	,DAY (date) 
-	,DatePart (dw, date)
-	, (select dwh.FNT_Is_Member_Last_Week(date))
-	,DateName (dw, date)
-	,LEFT(DateName (dw, date), 3)
-	FROM
-	MANGAL
-	OPTION
-	(MAXRECURSION 0)
-print 'Fin du script'
+	CAST(convert(Varchar(10),[Date],112) as integer) AS CAL_CalendarId
+	,[Date] AS CAL_ValueDate
+	,CONVERT(VarChar(12),[Date],113) AS CAL_DateName
+
+	/*Year informations*/
+	,CAST(cast(YEAR ([Date]) AS varchar(4))+'0101' as datetime) AS CAL_Year_Datetime
+	,YEAR ([Date]) AS CAL_Year_Name
+	
+	/*Semester informations*/
+	,cast(cast(YEAR ([Date]) AS varchar(4)) + '0' + cast(Ceiling(Month([Date])/6.0)as varchar(1)) +'01' as datetime) AS CAL_Semester_Datetime
+	,Ceiling(Month([Date])/6.0) AS CAL_SemesterName
+	
+	/*Trimester informations*/
+	,CAST(cast(YEAR ([Date]) AS varchar(4))+right('0'+cast(((DatePart ( qq, [Date])-1)*3)+1 AS varchar(2)),2)+'01' as datetime) AS CAL_Trimester_Datetime
+	,DatePart (qq, [Date])  AS CAL_Trimester_Name
+	
+	/*Month informations*/
+	,CAST(cast(YEAR ([Date]) AS varchar(4))+right('0'+cast(MONTH ([Date]) AS varchar(2)),2)+'01' as datetime) AS CAL_Month_Datetime
+	,MONTH ([Date]) AS CAL_Month_Number_Year
+	,DateDiff(mm,DateAdd(qq,DateDiff(qq,0,date),0),[Date])+1  AS CAL_Month_Number_Of_Trimester
+	,DateName (mm, [Date]) AS CAL_Month_Name_FR
+	,LEFT( DateName (mm, [Date]), 3) AS CAL_Month_Name_Abbreviation_FR
+	
+	/*Week informations*/
+	,DATEADD(DD, 1 - DATEPART(DW, [Date]), [Date]) AS CAL_Week_Datetime
+	,DatePart (wk, Date) AS CAL_Week_Number_Of_Year
+	,datediff(wk,dateadd(qq,datediff(qq,0,[Date]),0),[Date])+1 AS CAL_Week_Number_Of_Trimester
+	,datediff(wk,dateadd(mm,datediff(mm,0,[Date]),0),[Date])+1 AS CAL_Week_Number_Of_Month
+	
+	/*Day informations*/
+	,DatePart (dy, date) AS CAL_Day_Number_Of_Year 
+	,datediff(dd,dateadd(qq,datediff(qq,0,[Date]),0),[Date])+1 AS CAL_Day_Number_Of_Trimester
+	,DAY ([Date])  AS CAL_Day_Number_Of_Month
+	,DatePart (dw, [Date]) AS CAL_Day_Number_Of_Week
+	,DateName (dw, [Date]) AS CAL_Day_Name_FR
+	,LEFT(DateName (dw, [Date]), 3) AS CAL_Day_Name_Abbreviation_FR
+
+	FROM cte_calendar
+	OPTION	(MAXRECURSION 0)
+
