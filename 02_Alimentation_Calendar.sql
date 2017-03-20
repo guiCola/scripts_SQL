@@ -1,4 +1,4 @@
-
+/*Create a calendar in SQL Server*/
 --set language 'english';
 set language 'french'
 set datefirst 1;
