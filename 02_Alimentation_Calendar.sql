@@ -1,4 +1,4 @@
-/*Create a calendar in SQL Server*/
+/*Create a calendar in SQL Server avec test PoolRequest*/
 --set language 'english';
 set language 'french'
 set datefirst 1;
