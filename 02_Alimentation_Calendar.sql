@@ -1,4 +1,4 @@
-/*Create a calendar in SQL Server*/
+/*Create a calendar in SQL Server sur ma branche de test*/
 --set language 'english';
 set language 'french'
 set datefirst 1;
