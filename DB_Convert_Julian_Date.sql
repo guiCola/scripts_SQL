@@ -1,4 +1,4 @@
-/* @saber BENABDESSAMAD*/
+/* @saber BENABDESSAMAD uusss*/
 
 USE [AdventureWorks2008R2]
 GO
@@ -14,7 +14,7 @@ DECLARE @JD DECIMAL(18,5) --Full Julian Date
 DECLARE @dayOfWeek INT
 DECLARE @date DATETIME
 
-SET @date = @dtDate
+SET @date = @dtDate   
 SET @dayOfWeek = DATEPART(dd,@date)
 SET @a = FLOOR((14 - DATEPART(mm, @date)) / 12)
 SET @y = DATEPART(yy, @date) + 4800 - @a
